@@ -19,3 +19,18 @@ data class FollowRequestDTO(
     val followerId: UUID,
     val followeeId: UUID
 )
+
+data class WatchEpisodeRequestDTO(
+    val userId: UUID,
+    val episodeId: UUID
+)
+
+data class WatchTVShowDTO(
+    val userId: UUID,
+    val tvShowId: UUID
+)
+
+data class WatchSeasonDTO(
+    val userId: UUID,
+    val seasonId: UUID
+)

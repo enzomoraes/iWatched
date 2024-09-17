@@ -2,6 +2,7 @@ package com.iwatched.api.domain.useCases
 
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
+import com.iwatched.api.domain.models.TVShow
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.UserProjection
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class UserService(private val userRepository: UserRepository) {
+class UserService(private val userRepository: UserRepository, private val tvShowService: TVShowService) {
 
     fun findAllUsers(pageable: Pageable): Page<UserProjection> = userRepository.findByActive(pageable)
 
@@ -63,5 +64,29 @@ class UserService(private val userRepository: UserRepository) {
         follower.follow(followee)
 
         userRepository.save(follower)
+    }
+
+    fun watchTvShow(userId: UUID, tvShowId: UUID) {
+        val watcher = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
+        val tvShow = tvShowService.findByIdentifier(tvShowId).orElseThrow { RuntimeException("TV Show not found") }
+        watcher.watchTVShow(tvShow)
+
+        userRepository.save(watcher)
+    }
+
+    fun watchSeason(userId: UUID, seasonId: UUID) {
+        val watcher = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
+        val season = tvShowService.findSeasonByIdentifier(seasonId).orElseThrow { RuntimeException("TV Show not found") }
+        watcher.watchSeason(season)
+
+        userRepository.save(watcher)
+    }
+
+    fun watchEpisode(userId: UUID, episodeId: UUID) {
+        val watcher = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
+        val episode = tvShowService.findEpisodeByIdentifier(episodeId).orElseThrow { RuntimeException("Episode not found") }
+        watcher.watchEpisode(episode)
+
+        userRepository.save(watcher)
     }
 }

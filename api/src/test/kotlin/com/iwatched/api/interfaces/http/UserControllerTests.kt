@@ -2,9 +2,10 @@ package com.iwatched.api.interfaces.http
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iwatched.api.DatabaseSeeder
-import com.iwatched.api.domain.dto.FollowRequestDTO
-import com.iwatched.api.domain.dto.UserCreateDTO
-import com.iwatched.api.domain.dto.UserUpdateDTO
+import com.iwatched.api.domain.dto.*
+import com.iwatched.api.domain.repositories.EpisodeRepository
+import com.iwatched.api.domain.repositories.SeasonRepository
+import com.iwatched.api.domain.repositories.TVShowRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.util.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,11 +24,14 @@ class UserControllerTest @Autowired constructor(
     private val mockMvc: MockMvc,
     private val objectMapper: ObjectMapper,
     private val databaseSeeder: DatabaseSeeder,
+    private val tvShowRepository: TVShowRepository,
+    private val seasonRepository: SeasonRepository,
+    private val episodeRepository: EpisodeRepository
 ) {
 
     @BeforeEach
     fun setup() {
-        databaseSeeder.seed()  // Seed database before each test
+        databaseSeeder.seedUser()  // Seed database before each test
     }
 
     @Test
@@ -44,7 +47,7 @@ class UserControllerTest @Autowired constructor(
         mockMvc.perform(get("/users/{id}", DatabaseSeeder.USER1_ID))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID))
+            .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID.toString()))
     }
 
     @Test
@@ -79,7 +82,7 @@ class UserControllerTest @Autowired constructor(
         )
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID))
+            .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID.toString()))
     }
 
     @Test
@@ -103,14 +106,65 @@ class UserControllerTest @Autowired constructor(
     @Test
     fun `should follow user`() {
         val followRequestDTO = FollowRequestDTO(
-            followerId = UUID.fromString(DatabaseSeeder.USER1_ID),
-            followeeId = UUID.fromString(DatabaseSeeder.USER2_ID)
+            followerId = DatabaseSeeder.USER1_ID,
+            followeeId = DatabaseSeeder.USER2_ID
         )
 
         mockMvc.perform(
             post("/users/follow")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(followRequestDTO))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `should watch a whole TV Show`() {
+        databaseSeeder.seedTVShow()
+        val tvShow = tvShowRepository.findAll().first()
+        val watchEpisodeRequestDTO = WatchTVShowDTO(
+            DatabaseSeeder.USER1_ID,
+            tvShow.identifier
+        )
+
+        mockMvc.perform(
+            post("/users/watch-tv-show")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(watchEpisodeRequestDTO))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `should watch a whole Season`() {
+        databaseSeeder.seedTVShow()
+        val season = seasonRepository.findAll().first()
+        val watchEpisodeRequestDTO = WatchSeasonDTO(
+            DatabaseSeeder.USER1_ID,
+            season.identifier
+        )
+
+        mockMvc.perform(
+            post("/users/watch-season")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(watchEpisodeRequestDTO))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `should watch an episode`() {
+        databaseSeeder.seedTVShow()
+        val episode = episodeRepository.findAll().first()
+        val watchEpisodeRequestDTO = WatchEpisodeRequestDTO(
+            DatabaseSeeder.USER1_ID,
+            episode.identifier
+        )
+
+        mockMvc.perform(
+            post("/users/watch-episode")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(watchEpisodeRequestDTO))
         )
             .andExpect(status().isNoContent)
     }

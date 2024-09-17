@@ -1,16 +1,10 @@
 package com.iwatched.api.interfaces.http
 
-import com.iwatched.api.domain.dto.FollowRequestDTO
-import com.iwatched.api.domain.dto.UserCreateDTO
-import com.iwatched.api.domain.dto.UserUpdateDTO
-import com.iwatched.api.domain.models.User
-import com.iwatched.api.domain.repositories.UserRepository
+import com.iwatched.api.domain.dto.*
 import com.iwatched.api.domain.repositories.projections.UserProjection
 import com.iwatched.api.domain.useCases.UserService
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -62,5 +56,23 @@ class UserController(private val userService: UserService) {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun followUser(@RequestBody followRequestDTO: FollowRequestDTO) {
         userService.followUser(followRequestDTO.followerId, followRequestDTO.followeeId)
+    }
+
+    @PostMapping("/watch-tv-show")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun watchTvShow(@RequestBody watchRequest: WatchTVShowDTO) {
+        userService.watchTvShow(watchRequest.userId, watchRequest.tvShowId)
+    }
+
+    @PostMapping("/watch-season")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun watchSeason(@RequestBody watchRequest: WatchSeasonDTO) {
+        userService.watchSeason(watchRequest.userId, watchRequest.seasonId)
+    }
+
+    @PostMapping("/watch-episode")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun watchTvShow(@RequestBody watchRequest: WatchEpisodeRequestDTO) {
+        userService.watchEpisode(watchRequest.userId, watchRequest.episodeId)
     }
 }

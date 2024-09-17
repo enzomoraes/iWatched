@@ -3,8 +3,11 @@ package com.iwatched.api.domain.useCases
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
 import com.iwatched.api.domain.models.User
+import com.iwatched.api.domain.repositories.TVShowRepository
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.UserProjection
+import com.iwatched.api.factories.TvShowFactory
+import com.iwatched.api.factories.UserFactory
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,12 +24,17 @@ class UserServiceTest {
 
     private lateinit var userService: UserService
     private lateinit var userRepository: UserRepository
+    private lateinit var tvShowService: TVShowService
+
+    //    private lateinit var tvShowRepository: TVShowRepository
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
     @BeforeEach
     fun setUp() {
+        tvShowService = mock(TVShowService::class.java)
         userRepository = mock(UserRepository::class.java)
-        userService = UserService(userRepository)
+//        tvShowRepository = mock(TVShowRepository::class.java)
+        userService = UserService(userRepository, tvShowService)
     }
 
     @Test
@@ -138,22 +146,8 @@ class UserServiceTest {
         val followerId = UUID.randomUUID()
         val followeeId = UUID.randomUUID()
 
-        val follower = User(
-            identifier = followerId,
-            uid = "follower",
-            name = "Follower",
-            email = "follower@example.com",
-            image = "follower.jpg",
-            active = true
-        )
-        val followee = User(
-            identifier = followeeId,
-            uid = "followee",
-            name = "Followee",
-            email = "followee@example.com",
-            image = "followee.jpg",
-            active = true
-        )
+        val follower = UserFactory.createUser("user1", followerId)
+        val followee = UserFactory.createUser("user2", followeeId)
 
         // When
         `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
@@ -163,6 +157,67 @@ class UserServiceTest {
 
         // Then
         assertTrue(follower.follows.contains(followee))
+        verify(userRepository, times(1)).save(follower)
+    }
+
+    @Test
+    fun `should watch a whole TVShow`() {
+        // Given
+        val followerId = UUID.randomUUID()
+        val follower = UserFactory.createUser("user1", followerId)
+
+        val tvShow = TvShowFactory.createTVShow()
+
+        // When
+        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(tvShowService.findByIdentifier(tvShow.identifier)).thenReturn(Optional.of(tvShow))
+
+        userService.watchTvShow(followerId, tvShow.identifier)
+
+        // Then
+        assertTrue(follower.episodes.size == tvShow.seasons.map { s -> s.episodes }.flatten().toMutableSet().size)
+        verify(userRepository, times(1)).save(follower)
+    }
+
+    @Test
+    fun `should watch a whole Season`() {
+        // Given
+        val followerId = UUID.randomUUID()
+        val follower = UserFactory.createUser("user1", followerId)
+
+        val tvShow = TvShowFactory.createTVShow()
+        val season = tvShow.seasons.first()
+
+        // When
+        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(tvShowService.findSeasonByIdentifier(season.identifier)).thenReturn(Optional.of(season))
+
+        userService.watchSeason(followerId, season.identifier)
+
+        // Then
+        assertTrue(follower.episodes.size == season.episodes.toMutableSet().size)
+        verify(userRepository, times(1)).save(follower)
+    }
+
+    @Test
+    fun `should watch an episode`() {
+        // Given
+        val followerId = UUID.randomUUID()
+        val follower = UserFactory.createUser("user1", followerId)
+
+        val tvShow = TvShowFactory.createTVShow()
+        val episode = tvShow.seasons.first().episodes.first()
+
+        // When
+        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(tvShowService.findEpisodeByIdentifier(episode.identifier)).thenReturn(
+            Optional.of(episode)
+        )
+
+        userService.watchEpisode(followerId, episode.identifier)
+
+        // Then
+        assertTrue(follower.episodes.size == 1)
         verify(userRepository, times(1)).save(follower)
     }
 }
