@@ -3,7 +3,6 @@ package com.iwatched.api.domain.useCases
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
 import com.iwatched.api.domain.models.User
-import com.iwatched.api.domain.repositories.TVShowRepository
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.UserProjection
 import com.iwatched.api.factories.TvShowFactory
@@ -25,35 +24,25 @@ class UserServiceTest {
     private lateinit var userService: UserService
     private lateinit var userRepository: UserRepository
     private lateinit var tvShowService: TVShowService
-
-    //    private lateinit var tvShowRepository: TVShowRepository
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
     @BeforeEach
     fun setUp() {
         tvShowService = mock(TVShowService::class.java)
         userRepository = mock(UserRepository::class.java)
-//        tvShowRepository = mock(TVShowRepository::class.java)
         userService = UserService(userRepository, tvShowService)
     }
 
     @Test
     fun `should create a new user`() {
         // Given
-        val userCreateDTO = UserCreateDTO(
-            uid = "user1",
-            name = "Enzo Moraes",
-            email = "enzo@example.com",
-            image = "profile.jpg",
-            isActive = true
-        )
+        val temp = UserFactory.createUser("someone")
+        val userCreateDTO = UserCreateDTO(temp.uid, temp.name, temp.email, temp.image, true)
         val savedUser = User(
-            identifier = UUID.randomUUID(),
             uid = userCreateDTO.uid,
             name = userCreateDTO.name,
             email = userCreateDTO.email,
-            image = userCreateDTO.image,
-            active = userCreateDTO.isActive
+            image = userCreateDTO.image
         )
 
         // When
@@ -91,17 +80,10 @@ class UserServiceTest {
     fun `should update user details`() {
         // Given
         val userId = UUID.randomUUID()
-        val existingUser = User(
-            identifier = userId,
-            uid = "user1",
-            name = "Enzo Moraes",
-            email = "enzo@example.com",
-            image = "profile.jpg",
-            active = true
-        )
+        val existingUser = UserFactory.createUser("someone", userId)
         val userUpdateDTO = UserUpdateDTO(
-            name = "Enzo Updated",
-            username = "enzo_updated"
+            name = "someone Updated",
+            username = "someone_updated"
         )
 
         // When

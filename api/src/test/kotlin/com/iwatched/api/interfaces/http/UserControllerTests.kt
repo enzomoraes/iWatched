@@ -43,11 +43,13 @@ class UserControllerTest @Autowired constructor(
     }
 
     @Test
-    fun `should find user by identifier`() {
+    fun `should find user by identifier and with timeWatched`() {
         mockMvc.perform(get("/users/{id}", DatabaseSeeder.USER1_ID))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID.toString()))
+            .andExpect(jsonPath("$.timeWatched").exists())
+
     }
 
     @Test

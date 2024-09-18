@@ -2,10 +2,10 @@ package com.iwatched.api.domain.useCases
 
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
-import com.iwatched.api.domain.models.TVShow
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.UserProjection
+import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -17,6 +17,9 @@ class UserService(private val userRepository: UserRepository, private val tvShow
     fun findAllUsers(pageable: Pageable): Page<UserProjection> = userRepository.findByActive(pageable)
 
     fun findByIdentifier(id: UUID): Optional<UserProjection> = userRepository.findByIdentifier(id)
+
+    fun findByIdentifierWithTimeWatched(id: UUID): Optional<UserProjectionTimeWatched> =
+        userRepository.findByIdentifierWithTimeWatched(id)
 
     fun createUser(userCreateDTO: UserCreateDTO): UserProjection {
         val createdUser = userRepository.save(
@@ -76,7 +79,8 @@ class UserService(private val userRepository: UserRepository, private val tvShow
 
     fun watchSeason(userId: UUID, seasonId: UUID) {
         val watcher = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
-        val season = tvShowService.findSeasonByIdentifier(seasonId).orElseThrow { RuntimeException("TV Show not found") }
+        val season =
+            tvShowService.findSeasonByIdentifier(seasonId).orElseThrow { RuntimeException("TV Show not found") }
         watcher.watchSeason(season)
 
         userRepository.save(watcher)
@@ -84,7 +88,8 @@ class UserService(private val userRepository: UserRepository, private val tvShow
 
     fun watchEpisode(userId: UUID, episodeId: UUID) {
         val watcher = userRepository.findById(userId).orElseThrow { RuntimeException("User not found") }
-        val episode = tvShowService.findEpisodeByIdentifier(episodeId).orElseThrow { RuntimeException("Episode not found") }
+        val episode =
+            tvShowService.findEpisodeByIdentifier(episodeId).orElseThrow { RuntimeException("Episode not found") }
         watcher.watchEpisode(episode)
 
         userRepository.save(watcher)

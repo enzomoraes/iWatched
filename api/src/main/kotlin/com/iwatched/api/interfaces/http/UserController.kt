@@ -2,6 +2,7 @@ package com.iwatched.api.interfaces.http
 
 import com.iwatched.api.domain.dto.*
 import com.iwatched.api.domain.repositories.projections.UserProjection
+import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
 import com.iwatched.api.domain.useCases.UserService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -20,8 +21,8 @@ class UserController(private val userService: UserService) {
     ): Page<UserProjection> = userService.findAllUsers(pageable)
 
     @GetMapping("/{identifier}")
-    fun findByIdentifier(@PathVariable identifier: UUID): Optional<UserProjection> {
-        return userService.findByIdentifier(identifier)
+    fun findByIdentifier(@PathVariable identifier: UUID): Optional<UserProjectionTimeWatched> {
+        return userService.findByIdentifierWithTimeWatched(identifier)
     }
 
     @PostMapping
