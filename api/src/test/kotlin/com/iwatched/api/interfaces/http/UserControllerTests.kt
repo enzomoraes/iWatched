@@ -31,7 +31,8 @@ class UserControllerTest @Autowired constructor(
 
     @BeforeEach
     fun setup() {
-        databaseSeeder.seedUser()  // Seed database before each test
+        databaseSeeder.resetDatabase()
+        databaseSeeder.seedUser()
     }
 
     @Test

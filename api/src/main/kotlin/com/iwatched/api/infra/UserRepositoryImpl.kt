@@ -1,40 +1,19 @@
 package com.iwatched.api.infra
 
+import com.iwatched.api.domain.repositories.CustomUserRepository
+import com.iwatched.api.domain.repositories.projections.EpisodesProjection
+import com.iwatched.api.domain.repositories.projections.FollowsProjection
 import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
-import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched.EpisodesProjection
-import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched.FollowsProjection
 import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Component
 import java.util.*
 
-class UserProjectionTimeWatchedImpl(
-    override val identifier: UUID,
-    override val uid: String,
-    override val name: String,
-    override val username: String,
-    override val email: String,
-    override val image: String,
-    override val active: Boolean,
-    override val follows: Set<FollowsProjection>,
-    override val episodes: Set<EpisodesProjection>,
-    override val timeWatched: Long,
-) : UserProjectionTimeWatched
-
-class EpisodesProjectionImpl(
-    override val identifier: UUID,
-    override val duration: Long
-) : EpisodesProjection
-
-class FollowsProjectionImpl(
-    override val identifier: UUID,
-    override val username: String
-) : FollowsProjection
 
 @Component
 class UserRepositoryImpl(
     private val neo4jClient: Neo4jClient
-) {
-    fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserProjectionTimeWatched> {
+) : CustomUserRepository {
+    override fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserProjectionTimeWatched> {
         val query = """
             MATCH (u:User {identifier: '$identifier'})
             OPTIONAL MATCH (u)-[:WATCHES]->(e:Episode)
@@ -45,19 +24,19 @@ class UserRepositoryImpl(
             .fetchAs(UserProjectionTimeWatched::class.java)
             .mappedBy { _, record ->
                 val episodes = (record["episodes"].asList { episodeRecord ->
-                    EpisodesProjectionImpl(
+                    EpisodesProjection(
                         identifier = UUID.fromString(episodeRecord["identifier"].asString()),
                         duration = episodeRecord["duration"].asLong()
                     )
                 }).toSet()
 
                 val follows = (record["follows"].asList { followRecord ->
-                    FollowsProjectionImpl(
+                    FollowsProjection(
                         identifier = UUID.fromString(followRecord["identifier"].asString()),
                         username = followRecord["username"].asString()
                     )
                 }).toSet()
-                UserProjectionTimeWatchedImpl(
+                UserProjectionTimeWatched(
                     identifier = UUID.fromString(record["u"]["identifier"].asString()),
                     uid = record["u"]["uid"].asString(),
                     name = record["u"]["name"].asString(),

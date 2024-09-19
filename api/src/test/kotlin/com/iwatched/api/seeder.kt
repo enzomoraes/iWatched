@@ -23,7 +23,6 @@ class DatabaseSeeder @Autowired constructor(private val driver: Driver) {
         val user2 = UserFactory.createUser("Elon Musk", USER2_ID)
         driver.session().use { session ->
             session.executeWrite { tx ->
-                tx.run("MATCH (n) DETACH DELETE n")  // Clear existing data
                 tx.run("CREATE (u1:User {identifier: '${user1.identifier}', uid: '${user1.uid}', name: '${user1.name}', email: '${user1.email}', image: '${user1.image}', active: ${user1.active}})")
                 tx.run("CREATE (u1:User {identifier: '${user2.identifier}', uid: '${user2.uid}', name: '${user2.name}', email: '${user2.email}', image: '${user2.image}', active: ${user2.active}})")
                 tx.run("MATCH (u1:User {identifier: '${user1.identifier}'}), (u2:User {identifier: '${user2.identifier}'}) CREATE (u2)-[:FOLLOWS]->(u1)")
@@ -123,6 +122,17 @@ class DatabaseSeeder @Autowired constructor(private val driver: Driver) {
             }
         }
 
+    }
+
+    fun resetDatabase() {
+        println("reset database started")
+        driver.session().use { session ->
+            session.executeWrite { tx ->
+                tx.run("MATCH (n) DETACH DELETE n")  // Clear existing data
+                println("reset database finished")
+                null
+            }
+        }
     }
 
 }

@@ -10,9 +10,12 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface UserRepository : Neo4jRepository<User, UUID> {
-    fun findByActive(page: Pageable, active: Boolean = true): Page<UserProjection>
+interface UserRepository : Neo4jRepository<User, UUID>, CustomUserRepository {
+    fun findByActive(active: Boolean = true, page: Pageable): Page<UserProjection>
     fun findByIdentifier(identifier: UUID): Optional<UserProjection>
-    fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserProjectionTimeWatched>
 
+}
+
+interface CustomUserRepository {
+    fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserProjectionTimeWatched>
 }

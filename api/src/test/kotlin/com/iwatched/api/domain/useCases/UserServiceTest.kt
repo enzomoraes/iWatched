@@ -66,14 +66,27 @@ class UserServiceTest {
         val pagedUsers: Page<UserProjection> = PageImpl(userProjections, pageable, userProjections.size.toLong())
 
         // When
-        `when`(userRepository.findByActive(pageable)).thenReturn(pagedUsers)
+        `when`(userRepository.findByActive(page = pageable)).thenReturn(pagedUsers)
 
         val result = userService.findAllUsers(pageable)
 
         // Then
         assertNotNull(result)
         assertEquals(1, result.content.size)
-        verify(userRepository, times(1)).findByActive(pageable)
+        verify(userRepository, times(1)).findByActive(page = pageable)
+    }
+
+    @Test
+    fun `should return a user by its identifier`() {
+        // Given
+        val identifier: UUID = UUID.randomUUID()
+
+        // When
+        val result = userService.findByIdentifier(identifier)
+
+        // Then
+        assertNotNull(result)
+        verify(userRepository, times(1)).findByIdentifier(identifier)
     }
 
     @Test

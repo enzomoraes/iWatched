@@ -14,7 +14,7 @@ import java.util.*
 @Service
 class UserService(private val userRepository: UserRepository, private val tvShowService: TVShowService) {
 
-    fun findAllUsers(pageable: Pageable): Page<UserProjection> = userRepository.findByActive(pageable)
+    fun findAllUsers(pageable: Pageable): Page<UserProjection> = userRepository.findByActive(page = pageable)
 
     fun findByIdentifier(id: UUID): Optional<UserProjection> = userRepository.findByIdentifier(id)
 
