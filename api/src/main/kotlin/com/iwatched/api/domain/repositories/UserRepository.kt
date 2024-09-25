@@ -1,8 +1,8 @@
 package com.iwatched.api.domain.repositories
 
 import com.iwatched.api.domain.models.User
-import com.iwatched.api.domain.repositories.projections.UserProjection
-import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
+import com.iwatched.api.domain.repositories.projections.IUserProjection
+import com.iwatched.api.domain.repositories.projections.UserDetails
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.neo4j.repository.Neo4jRepository
@@ -11,11 +11,11 @@ import java.util.*
 
 @Repository
 interface UserRepository : Neo4jRepository<User, UUID>, CustomUserRepository {
-    fun findByActive(active: Boolean = true, page: Pageable): Page<UserProjection>
-    fun findByIdentifier(identifier: UUID): Optional<UserProjection>
+    fun findByActive(active: Boolean = true, page: Pageable): Page<IUserProjection>
+    fun findByIdentifier(identifier: UUID): Optional<IUserProjection>
 
 }
 
 interface CustomUserRepository {
-    fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserProjectionTimeWatched>
+    fun findByIdentifierWithTimeWatched(identifier: UUID): Optional<UserDetails>
 }

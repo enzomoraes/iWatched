@@ -36,9 +36,10 @@ class UserRepositoryImplTests @Autowired constructor(
     @Test
     fun `should return user projection with timeWatched not 0`() {
         val user = userRepository.findByIdentifierWithTimeWatched(DatabaseSeeder.USER1_ID).orElseThrow()
-        assertNotNull(user.timeWatched)
         assertNotEquals(0, user.episodes.size)
         assertEquals(0, user.follows.size)
+        assertNotNull(user.timeWatched)
+//        assertNotNull(user.episodes.first().currentlyWatching)
     }
 
     @Test

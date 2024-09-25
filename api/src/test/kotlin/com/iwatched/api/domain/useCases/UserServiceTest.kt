@@ -4,6 +4,7 @@ import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
+import com.iwatched.api.domain.repositories.projections.IUserProjection
 import com.iwatched.api.domain.repositories.projections.UserProjection
 import com.iwatched.api.factories.TvShowFactory
 import com.iwatched.api.factories.UserFactory
@@ -63,7 +64,7 @@ class UserServiceTest {
         // Given
         val pageable: Pageable = PageRequest.of(0, 10)
         val userProjections: List<UserProjection> = listOf(mock(UserProjection::class.java))
-        val pagedUsers: Page<UserProjection> = PageImpl(userProjections, pageable, userProjections.size.toLong())
+        val pagedUsers: Page<IUserProjection> = PageImpl(userProjections, pageable, userProjections.size.toLong())
 
         // When
         `when`(userRepository.findByActive(page = pageable)).thenReturn(pagedUsers)

@@ -4,8 +4,8 @@ import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
-import com.iwatched.api.domain.repositories.projections.UserProjection
-import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
+import com.iwatched.api.domain.repositories.projections.IUserProjection
+import com.iwatched.api.domain.repositories.projections.UserDetails
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -14,14 +14,14 @@ import java.util.*
 @Service
 class UserService(private val userRepository: UserRepository, private val tvShowService: TVShowService) {
 
-    fun findAllUsers(pageable: Pageable): Page<UserProjection> = userRepository.findByActive(page = pageable)
+    fun findAllUsers(pageable: Pageable): Page<IUserProjection> = userRepository.findByActive(page = pageable)
 
-    fun findByIdentifier(id: UUID): Optional<UserProjection> = userRepository.findByIdentifier(id)
+    fun findByIdentifier(id: UUID): Optional<IUserProjection> = userRepository.findByIdentifier(id)
 
-    fun findByIdentifierWithTimeWatched(id: UUID): Optional<UserProjectionTimeWatched> =
+    fun findByIdentifierWithTimeWatched(id: UUID): Optional<UserDetails> =
         userRepository.findByIdentifierWithTimeWatched(id)
 
-    fun createUser(userCreateDTO: UserCreateDTO): UserProjection {
+    fun createUser(userCreateDTO: UserCreateDTO): IUserProjection {
         val createdUser = userRepository.save(
             User(
                 uid = userCreateDTO.uid,
@@ -34,7 +34,7 @@ class UserService(private val userRepository: UserRepository, private val tvShow
         return findByIdentifier(createdUser.identifier).orElseThrow { RuntimeException("User not found") }
     }
 
-    fun updateUser(id: UUID, updatedUser: UserUpdateDTO): UserProjection {
+    fun updateUser(id: UUID, updatedUser: UserUpdateDTO): IUserProjection {
         val existingUser = userRepository.findById(id).orElseThrow { RuntimeException("User not found") }
         val userToUpdate = existingUser.copy(
             name = updatedUser.name,

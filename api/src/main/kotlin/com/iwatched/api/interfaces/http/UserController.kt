@@ -1,8 +1,8 @@
 package com.iwatched.api.interfaces.http
 
 import com.iwatched.api.domain.dto.*
-import com.iwatched.api.domain.repositories.projections.UserProjection
-import com.iwatched.api.domain.repositories.projections.UserProjectionTimeWatched
+import com.iwatched.api.domain.repositories.projections.IUserProjection
+import com.iwatched.api.domain.repositories.projections.UserDetails
 import com.iwatched.api.domain.useCases.UserService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -18,20 +18,20 @@ class UserController(private val userService: UserService) {
     @GetMapping
     fun findAll(
         pageable: Pageable
-    ): Page<UserProjection> = userService.findAllUsers(pageable)
+    ): Page<IUserProjection> = userService.findAllUsers(pageable)
 
     @GetMapping("/{identifier}")
-    fun findByIdentifier(@PathVariable identifier: UUID): Optional<UserProjectionTimeWatched> {
+    fun findByIdentifier(@PathVariable identifier: UUID): Optional<UserDetails> {
         return userService.findByIdentifierWithTimeWatched(identifier)
     }
 
     @PostMapping
-    fun createUser(@RequestBody userCreateDTO: UserCreateDTO): UserProjection {
+    fun createUser(@RequestBody userCreateDTO: UserCreateDTO): IUserProjection {
         return userService.createUser(userCreateDTO)
     }
 
     @PutMapping("/{id}")
-    fun updateUser(@PathVariable id: UUID, @RequestBody updatedUser: UserUpdateDTO): UserProjection {
+    fun updateUser(@PathVariable id: UUID, @RequestBody updatedUser: UserUpdateDTO): IUserProjection {
         return userService.updateUser(id, updatedUser)
     }
 
