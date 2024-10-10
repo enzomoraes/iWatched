@@ -159,61 +159,116 @@ class UserServiceTest {
     @Test
     fun `should watch a whole TVShow`() {
         // Given
-        val followerId = UUID.randomUUID()
-        val follower = UserFactory.createUser("user1", followerId)
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
 
         val tvShow = TvShowFactory.createTVShow()
 
         // When
-        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(tvShowService.findByIdentifier(tvShow.identifier)).thenReturn(Optional.of(tvShow))
 
-        userService.watchTvShow(followerId, tvShow.identifier)
+        userService.watchTvShow(userId, tvShow.identifier)
 
         // Then
-        assertTrue(follower.episodes.size == tvShow.seasons.map { s -> s.episodes }.flatten().toMutableSet().size)
-        verify(userRepository, times(1)).save(follower)
+        assertTrue(user.episodes.size == tvShow.seasons.map { s -> s.episodes }.flatten().toMutableSet().size)
+        verify(userRepository, times(1)).save(user)
     }
 
     @Test
     fun `should watch a whole Season`() {
         // Given
-        val followerId = UUID.randomUUID()
-        val follower = UserFactory.createUser("user1", followerId)
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
 
         val tvShow = TvShowFactory.createTVShow()
         val season = tvShow.seasons.first()
 
         // When
-        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(tvShowService.findSeasonByIdentifier(season.identifier)).thenReturn(Optional.of(season))
 
-        userService.watchSeason(followerId, season.identifier)
+        userService.watchSeason(userId, season.identifier)
 
         // Then
-        assertTrue(follower.episodes.size == season.episodes.toMutableSet().size)
-        verify(userRepository, times(1)).save(follower)
+        assertTrue(user.episodes.size == season.episodes.toMutableSet().size)
+        verify(userRepository, times(1)).save(user)
     }
 
     @Test
     fun `should watch an episode`() {
         // Given
-        val followerId = UUID.randomUUID()
-        val follower = UserFactory.createUser("user1", followerId)
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
 
         val tvShow = TvShowFactory.createTVShow()
         val episode = tvShow.seasons.first().episodes.first()
 
         // When
-        `when`(userRepository.findById(followerId)).thenReturn(Optional.of(follower))
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(tvShowService.findEpisodeByIdentifier(episode.identifier)).thenReturn(
             Optional.of(episode)
         )
 
-        userService.watchEpisode(followerId, episode.identifier)
+        userService.watchEpisode(userId, episode.identifier)
 
         // Then
-        assertTrue(follower.episodes.size == 1)
-        verify(userRepository, times(1)).save(follower)
+        assertTrue(user.episodes.size == 1)
+        verify(userRepository, times(1)).save(user)
+    }
+
+    @Test
+    fun `should watch all episodes of a season and have the season marked as watched`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
+
+        val tvShow = TvShowFactory.createTVShow()
+        val episodes = tvShow.seasons.first().episodes
+
+        // When
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        `when`(userRepository.getWatchedSeasonIfAllEpisodesWatched(user.identifier, episodes.last().identifier)).thenReturn(Optional.of(tvShow.seasons.first()))
+        for (ep in episodes) {
+            doReturn(Optional.of(ep))
+                .`when`(tvShowService).findEpisodeByIdentifier(ep.identifier)
+        }
+
+        for (ep in episodes) {
+            userService.watchEpisode(userId, ep.identifier)
+        }
+
+        // Then
+        assertTrue(user.episodes.size == episodes.size)
+        assertTrue(user.seasons.size == 1)
+        verify(userRepository, times(episodes.size)).save(user)
+    }
+
+    @Test
+    fun `should watch all seasons of a tvShow and have the tvShow marked as watched`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
+
+        val tvShow = TvShowFactory.createTVShow()
+        val seasons = tvShow.seasons
+
+        // When
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        `when`(userRepository.getWatchedTvShowIfAllSeasonsWatched(user.identifier, seasons.last().identifier)).thenReturn(Optional.of(tvShow))
+        for (season in seasons) {
+            doReturn(Optional.of(season))
+                .`when`(tvShowService).findSeasonByIdentifier(season.identifier)
+        }
+
+        for (season in seasons) {
+            userService.watchSeason(userId, season.identifier)
+        }
+
+        // Then
+        assertTrue(user.episodes.size == seasons.map { s -> s.episodes }.flatten().size)
+        assertTrue(user.seasons.size == seasons.size)
+        assertTrue(user.tvShows.size == 1)
+        verify(userRepository, times(seasons.size)).save(user)
     }
 }

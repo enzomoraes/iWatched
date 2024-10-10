@@ -16,6 +16,10 @@ data class User(
     var follows: MutableSet<User> = mutableSetOf(),
     @Relationship(type = "WATCHES_EP", direction = Relationship.Direction.OUTGOING)
     var episodes: MutableSet<WatchesEp> = mutableSetOf(),
+    @Relationship(type = "WATCHES_TV_SHOW", direction = Relationship.Direction.OUTGOING)
+    var tvShows: MutableSet<WatchesTVShow> = mutableSetOf(),
+    @Relationship(type = "WATCHES_SEASON", direction = Relationship.Direction.OUTGOING)
+    var seasons: MutableSet<WatchesSeason> = mutableSetOf(),
 ) {
 
     fun follow(user: User): User {
@@ -24,23 +28,26 @@ data class User(
     }
 
     fun watchTVShow(tvShow: TVShow): User {
-        for (seasons in tvShow.seasons) {
-            for (ep in seasons.episodes) {
-                this.episodes.add(WatchesEp(ep))
-            }
+        for (season in tvShow.seasons) {
+            watchSeason(season)
         }
+        if (!this.tvShows.contains(WatchesTVShow(tvShow)))
+            this.tvShows.add(WatchesTVShow(tvShow))
         return this
     }
 
     fun watchSeason(season: Season): User {
         for (ep in season.episodes) {
-            this.episodes.add(WatchesEp(ep))
+            this.watchEpisode(ep)
         }
+        if (!this.seasons.contains(WatchesSeason(season)))
+            this.seasons.add(WatchesSeason(season))
         return this
     }
 
     fun watchEpisode(episode: Episode): User {
-        this.episodes.add(WatchesEp(episode))
+        if (!this.episodes.contains(WatchesEp(episode)))
+            this.episodes.add(WatchesEp(episode))
         return this
     }
 

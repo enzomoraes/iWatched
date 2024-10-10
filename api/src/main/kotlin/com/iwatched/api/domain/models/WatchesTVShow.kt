@@ -10,7 +10,19 @@ data class WatchesTVShow(
     @TargetNode val tvShow: TVShow,
     @Id
     @GeneratedValue
-    val id: Long?
+    val id: Long?,
+    val rank: Int?
 ) {
-    constructor(tvShow: TVShow) : this(tvShow, null)
+    constructor(tvShow: TVShow) : this(tvShow, null, null)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is WatchesTVShow) return false
+
+        return tvShow.identifier == other.tvShow.identifier
+    }
+
+    override fun hashCode(): Int {
+        return tvShow.hashCode()
+    }
 }

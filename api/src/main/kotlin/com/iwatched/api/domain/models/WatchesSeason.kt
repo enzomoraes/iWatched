@@ -6,22 +6,22 @@ import org.springframework.data.neo4j.core.schema.RelationshipProperties
 import org.springframework.data.neo4j.core.schema.TargetNode
 
 @RelationshipProperties
-data class WatchesEp(
-    @TargetNode val episode: Episode,
+data class WatchesSeason(
+    @TargetNode val season: Season,
     @Id
     @GeneratedValue
     val id: Long?
 ) {
-    constructor(episode: Episode) : this(episode, null)
+    constructor(season: Season) : this(season, null)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is WatchesEp) return false
+        if (other !is WatchesSeason) return false
 
-        return episode.identifier == other.episode.identifier
+        return season.identifier == other.season.identifier
     }
 
     override fun hashCode(): Int {
-        return episode.hashCode()
+        return season.hashCode()
     }
 }

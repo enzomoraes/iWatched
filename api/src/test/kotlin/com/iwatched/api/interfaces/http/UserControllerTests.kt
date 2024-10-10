@@ -6,6 +6,7 @@ import com.iwatched.api.domain.dto.*
 import com.iwatched.api.domain.repositories.EpisodeRepository
 import com.iwatched.api.domain.repositories.SeasonRepository
 import com.iwatched.api.domain.repositories.TVShowRepository
+import com.iwatched.api.domain.repositories.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import kotlin.test.assertEquals
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,7 +28,8 @@ class UserControllerTest @Autowired constructor(
     private val databaseSeeder: DatabaseSeeder,
     private val tvShowRepository: TVShowRepository,
     private val seasonRepository: SeasonRepository,
-    private val episodeRepository: EpisodeRepository
+    private val episodeRepository: EpisodeRepository,
+    private val userRepository: UserRepository
 ) {
 
     @BeforeEach
@@ -170,5 +173,53 @@ class UserControllerTest @Autowired constructor(
                 .content(objectMapper.writeValueAsString(watchEpisodeRequestDTO))
         )
             .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `watch all seasons episodes then mark season as watched`() {
+        databaseSeeder.seedTVShow()
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+
+        val episodes = episodeRepository.findAll()
+        for (ep in episodes) {
+            val watchEpisodeRequestDTO = WatchEpisodeRequestDTO(
+                DatabaseSeeder.USER1_ID,
+                ep.identifier
+            )
+            mockMvc.perform(
+                post("/users/watch-episode")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(watchEpisodeRequestDTO))
+            )
+                .andExpect(status().isNoContent)
+        }
+
+        val test = userRepository.getWatchedSeasonIfAllEpisodesWatched(DatabaseSeeder.USER1_ID, episodes.first().identifier)
+        println("->>>>>>>>>>>>>>>> episode id ${episodes.first().identifier} teste $test")
+        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+    }
+
+    @Test
+    fun `watch all seasons then mark tv show as watched`() {
+        databaseSeeder.seedTVShow()
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+
+        val seasons = seasonRepository.findAll()
+        for (season in seasons) {
+            val watchSeasonDTO = WatchSeasonDTO(
+                DatabaseSeeder.USER1_ID,
+                season.identifier
+            )
+            mockMvc.perform(
+                post("/users/watch-season")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(watchSeasonDTO))
+            )
+                .andExpect(status().isNoContent)
+        }
+
+        assertEquals(5, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
     }
 }
