@@ -1,5 +1,8 @@
 package com.iwatched.api.infra
 
+import com.iwatched.api.domain.models.Episode
+import com.iwatched.api.domain.models.Season
+import com.iwatched.api.domain.models.TVShow
 import com.iwatched.api.domain.repositories.CustomUserRepository
 import com.iwatched.api.domain.repositories.projections.EpisodeProjection
 import com.iwatched.api.domain.repositories.projections.WatchesEpsProjection
@@ -26,7 +29,7 @@ class UserRepositoryImpl(
 //                val watchesProperties = record["watchesProperties"].asList { it.asMap() }
                 val episodes = record["episodes"].asList { it.asMap() }
 
-                val mergedEpisodes = episodes.mapIndexed { index, episodeRecord ->
+                val mergedEpisodes = episodes.mapIndexed { _, episodeRecord ->
 //                    val watchProps = watchesProperties[index]
                     WatchesEpsProjection(
 //                        currentlyWatching = watchProps["currentlyWatching"] as Boolean,

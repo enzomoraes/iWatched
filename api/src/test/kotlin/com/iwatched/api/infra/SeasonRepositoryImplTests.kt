@@ -2,6 +2,7 @@ package com.iwatched.api.infra
 
 import com.iwatched.api.DatabaseSeeder
 import com.iwatched.api.domain.dto.TVShowFilters
+import com.iwatched.api.domain.repositories.SeasonRepository
 import com.iwatched.api.domain.repositories.TVShowRepository
 import com.iwatched.api.domain.repositories.UserRepository
 import org.junit.jupiter.api.BeforeEach
@@ -18,8 +19,9 @@ import kotlin.test.assertNotNull
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class TVShowRepositoryImplTests @Autowired constructor(
+class SeasonRepositoryImplTests @Autowired constructor(
     private val tvShowRepository: TVShowRepository,
+    private val seasonRepository: SeasonRepository,
     private val databaseSeeder: DatabaseSeeder
 ) {
 
@@ -30,28 +32,10 @@ class TVShowRepositoryImplTests @Autowired constructor(
     }
 
     @Test
-    fun `should return tv shows projection`() {
-        val tvShows = tvShowRepository.findBy(TVShowFilters(title = null), PageRequest.of(0, 10))
-        var count = 0L
-        tvShows.content.forEach { _ -> count++}
-        assertNotNull(tvShows.content)
-        assertEquals(tvShowRepository.count(), count)
-    }
+    fun `should find season by episode identifier`() {
+        val targetSeason = tvShowRepository.findAll().first().seasons.first()
+        val season = seasonRepository.findSeasonByEpisodeIdentifier(targetSeason.episodes.first().identifier)
 
-    @Test
-    fun `should return no tv shows projection`() {
-        val tvShows = tvShowRepository.findBy(TVShowFilters(title = "non existent"), PageRequest.of(0, 10))
-        var count = 0L
-        tvShows.content.forEach { _ -> count++}
-        assertNotNull(tvShows.content)
-        assertEquals(0, count)
-    }
-
-    @Test
-    fun `should find tv show by season identifier`() {
-        val targetTvShow = tvShowRepository.findAll().first()
-        val tvShow = tvShowRepository.findTVShowBySeasonIdentifier(targetTvShow.seasons.first().identifier)
-
-        assertEquals(targetTvShow.identifier, tvShow.get().identifier)
+        assertEquals(targetSeason.identifier, season.get().identifier)
     }
 }

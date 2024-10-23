@@ -194,9 +194,7 @@ class UserControllerTest @Autowired constructor(
                 .andExpect(status().isNoContent)
         }
 
-        val test = userRepository.getWatchedSeasonIfAllEpisodesWatched(DatabaseSeeder.USER1_ID, episodes.first().identifier)
-        println("->>>>>>>>>>>>>>>> episode id ${episodes.first().identifier} teste $test")
-        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+        assertEquals(5, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
     }
 
     @Test

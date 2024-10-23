@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.util.*
+import javax.swing.text.html.Option
 
 
 @Service
@@ -36,6 +37,14 @@ class TVShowService(
 
     fun findSeasonByIdentifier(identifier: UUID): Optional<Season> {
         return seasonRepository.findById(identifier)
+    }
+
+    fun findSeasonByEpisodeIdentifier(identifier: UUID): Optional<Season> {
+        return seasonRepository.findSeasonByEpisodeIdentifier(identifier)
+    }
+
+    fun findTVShowBySeasonIdentifier(identifier: UUID): Optional<TVShow> {
+        return tvShowRepository.findTVShowBySeasonIdentifier(identifier)
     }
 
 }

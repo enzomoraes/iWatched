@@ -17,7 +17,10 @@ import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
-class UserService(private val userRepository: UserRepository, private val tvShowService: TVShowService) {
+class UserService(
+    private val userRepository: UserRepository,
+    private val tvShowService: TVShowService,
+) {
 
     fun findAllUsers(pageable: Pageable): Page<IUserProjection> = userRepository.findByActive(page = pageable)
 
@@ -66,8 +69,10 @@ class UserService(private val userRepository: UserRepository, private val tvShow
     }
 
     fun followUser(followerId: UUID, followeeId: UUID) {
-        val follower = userRepository.findById(followerId).orElseThrow { EntityNotFound("Follower not found", User::class) }
-        val followee = userRepository.findById(followeeId).orElseThrow { EntityNotFound("Followee not found", User::class) }
+        val follower =
+            userRepository.findById(followerId).orElseThrow { EntityNotFound("Follower not found", User::class) }
+        val followee =
+            userRepository.findById(followeeId).orElseThrow { EntityNotFound("Followee not found", User::class) }
 
         follower.follow(followee)
 
@@ -76,7 +81,8 @@ class UserService(private val userRepository: UserRepository, private val tvShow
 
     fun watchTvShow(userId: UUID, tvShowId: UUID) {
         val watcher = userRepository.findById(userId).orElseThrow { EntityNotFound("User not found", User::class) }
-        val tvShow = tvShowService.findByIdentifier(tvShowId).orElseThrow { EntityNotFound("TV Show not found", TVShow::class) }
+        val tvShow =
+            tvShowService.findByIdentifier(tvShowId).orElseThrow { EntityNotFound("TV Show not found", TVShow::class) }
         watcher.watchTVShow(tvShow)
 
         userRepository.save(watcher)
@@ -84,7 +90,8 @@ class UserService(private val userRepository: UserRepository, private val tvShow
 
     fun watchSeason(userId: UUID, seasonId: UUID) {
         val watcher = userRepository.findById(userId).orElseThrow { EntityNotFound("User not found", User::class) }
-        val season = tvShowService.findSeasonByIdentifier(seasonId).orElseThrow { EntityNotFound("Season not found", Season::class) }
+        val season = tvShowService.findSeasonByIdentifier(seasonId)
+            .orElseThrow { EntityNotFound("Season not found", Season::class) }
 
         watcher.watchSeason(season)
 
@@ -96,7 +103,8 @@ class UserService(private val userRepository: UserRepository, private val tvShow
     fun watchEpisode(userId: UUID, episodeId: UUID) {
         val watcher = userRepository.findById(userId).orElseThrow { EntityNotFound("User not found", User::class) }
         val episode =
-            tvShowService.findEpisodeByIdentifier(episodeId).orElseThrow { EntityNotFound("Episode not found", Episode::class) }
+            tvShowService.findEpisodeByIdentifier(episodeId)
+                .orElseThrow { EntityNotFound("Episode not found", Episode::class) }
 
         watcher.watchEpisode(episode)
 
@@ -107,17 +115,28 @@ class UserService(private val userRepository: UserRepository, private val tvShow
 
     private fun checkUserHasWatchedAllEpisodes(episodeId: UUID, watcher: User) {
         val season =
-            userRepository.getWatchedSeasonIfAllEpisodesWatched(watcher.identifier, episodeId).getOrElse { return }
+            tvShowService.findSeasonByEpisodeIdentifier(episodeId).getOrElse { return }
 
-        watcher.watchSeason(season)
-        checkUserHasWatchedAllSeasons(season.identifier, watcher)
+        val watchedEpisodes = watcher.episodes.map { it.episode.identifier }.toSet()
+        val allEpisodesOfSeason = season.episodes.map { it.identifier }.toSet()
+
+        if (allEpisodesOfSeason.all { watchedEpisodes.contains(it) }) {
+            watcher.watchSeason(season)
+            checkUserHasWatchedAllSeasons(season.identifier, watcher)
+        }
+
     }
 
     private fun checkUserHasWatchedAllSeasons(seasonId: UUID, watcher: User) {
         val tvShow =
-            userRepository.getWatchedTvShowIfAllSeasonsWatched(watcher.identifier, seasonId).getOrElse { return }
+            tvShowService.findTVShowBySeasonIdentifier(seasonId).getOrElse { return }
 
-        watcher.watchTVShow(tvShow)
+        val watchedSeasons = watcher.seasons.map { it.season.identifier }.toSet()
+        val allSeasonsOfTVShow = tvShow.seasons.map { it.identifier }.toSet()
+
+        if (allSeasonsOfTVShow.all { watchedSeasons.contains(it) }) {
+            watcher.watchTVShow(tvShow)
+        }
     }
 
 }

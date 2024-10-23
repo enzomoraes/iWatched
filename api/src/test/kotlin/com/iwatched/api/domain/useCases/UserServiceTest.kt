@@ -2,6 +2,7 @@ package com.iwatched.api.domain.useCases
 
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
+import com.iwatched.api.domain.models.TVShow
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.IUserProjection
@@ -228,8 +229,10 @@ class UserServiceTest {
 
         // When
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
-        `when`(userRepository.getWatchedSeasonIfAllEpisodesWatched(user.identifier, episodes.last().identifier)).thenReturn(Optional.of(tvShow.seasons.first()))
+
         for (ep in episodes) {
+            doReturn(Optional.of(tvShow.seasons.first()))
+                .`when`(tvShowService).findSeasonByEpisodeIdentifier(ep.identifier)
             doReturn(Optional.of(ep))
                 .`when`(tvShowService).findEpisodeByIdentifier(ep.identifier)
         }
@@ -255,8 +258,9 @@ class UserServiceTest {
 
         // When
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
-        `when`(userRepository.getWatchedTvShowIfAllSeasonsWatched(user.identifier, seasons.last().identifier)).thenReturn(Optional.of(tvShow))
         for (season in seasons) {
+            doReturn(Optional.of(tvShow)).`when`(tvShowService).findTVShowBySeasonIdentifier(season.identifier)
+
             doReturn(Optional.of(season))
                 .`when`(tvShowService).findSeasonByIdentifier(season.identifier)
         }
