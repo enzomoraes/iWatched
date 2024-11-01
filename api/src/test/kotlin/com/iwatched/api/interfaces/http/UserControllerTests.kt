@@ -53,6 +53,7 @@ class UserControllerTest @Autowired constructor(
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.identifier").value(DatabaseSeeder.USER1_ID.toString()))
             .andExpect(jsonPath("$.timeWatched").exists())
+            .andExpect(jsonPath("$.tvShows").exists())
 
     }
 
@@ -219,5 +220,25 @@ class UserControllerTest @Autowired constructor(
 
         assertEquals(5, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
         assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+    }
+
+    @Test
+    fun `rank tv show`() {
+        databaseSeeder.seedTVShow()
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+
+        val tvShow = tvShowRepository.findAll().first()
+
+        mockMvc.perform(
+            post("/users/rank-tv-show")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(RankTvShowDTO(DatabaseSeeder.USER1_ID, tvShow.identifier, 1)))
+        )
+            .andExpect(status().isNoContent)
+
+        assertEquals(5, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.first().rank)
     }
 }

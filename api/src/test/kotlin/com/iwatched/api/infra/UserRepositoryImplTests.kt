@@ -39,7 +39,6 @@ class UserRepositoryImplTests @Autowired constructor(
         assertNotEquals(0, user.episodes.size)
         assertEquals(0, user.follows.size)
         assertNotNull(user.timeWatched)
-//        assertNotNull(user.episodes.first().currentlyWatching)
     }
 
     @Test
@@ -47,5 +46,16 @@ class UserRepositoryImplTests @Autowired constructor(
         val user = userRepository.findByIdentifierWithTimeWatched(DatabaseSeeder.USER2_ID).orElseThrow()
         assertNotNull(user.timeWatched)
         assertEquals(0, user.episodes.size)
+    }
+
+    @Test
+    fun `should return user projection with tv show rank`() {
+        val user = userRepository.findById(DatabaseSeeder.USER1_ID).orElseThrow()
+        user.rankTvShow(user.tvShows.first().tvShow, 1)
+        userRepository.save(user)
+
+        val userProjection = userRepository.findByIdentifierWithTimeWatched(DatabaseSeeder.USER1_ID).orElseThrow()
+        assertEquals(1, userProjection.tvShows.first().tvShow.rank)
+        assertEquals(1,userProjection.tvShows.size)
     }
 }

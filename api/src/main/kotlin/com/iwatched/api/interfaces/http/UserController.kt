@@ -76,4 +76,10 @@ class UserController(private val userService: UserService) {
     fun watchTvShow(@RequestBody watchRequest: WatchEpisodeRequestDTO) {
         userService.watchEpisode(watchRequest.userId, watchRequest.episodeId)
     }
+
+    @PostMapping("/rank-tv-show")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun markAsFavorite(@RequestBody rankTvShowRequest: RankTvShowDTO) {
+        userService.rankTvShow(rankTvShowRequest.userId, rankTvShowRequest.tvShowId, rankTvShowRequest.rank)
+    }
 }

@@ -113,6 +113,18 @@ class UserService(
         userRepository.save(watcher)
     }
 
+
+    fun rankTvShow(userId: UUID, tvShowId: UUID, rank: Int) {
+        val watcher = userRepository.findById(userId).orElseThrow { EntityNotFound("User not found", User::class) }
+        val tvShow =
+            tvShowService.findByIdentifier(tvShowId).orElseThrow { EntityNotFound("TV Show not found", TVShow::class) }
+
+        watcher.watchTVShow(tvShow)
+        watcher.rankTvShow(tvShow, rank)
+
+        userRepository.save(watcher)
+    }
+
     private fun checkUserHasWatchedAllEpisodes(episodeId: UUID, watcher: User) {
         val season =
             tvShowService.findSeasonByEpisodeIdentifier(episodeId).getOrElse { return }

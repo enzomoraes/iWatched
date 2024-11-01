@@ -34,3 +34,9 @@ data class WatchSeasonDTO(
     val userId: UUID,
     val seasonId: UUID
 )
+
+data class RankTvShowDTO(
+    val userId: UUID,
+    val tvShowId: UUID,
+    val rank: Int
+)

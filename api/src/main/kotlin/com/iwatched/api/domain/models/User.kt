@@ -3,6 +3,7 @@ package com.iwatched.api.domain.models
 import org.springframework.data.neo4j.core.schema.Id
 import org.springframework.data.neo4j.core.schema.Relationship
 import java.util.*
+import java.util.logging.Logger
 
 data class User(
     @Id val identifier: UUID = UUID.randomUUID(),
@@ -48,6 +49,16 @@ data class User(
     fun watchEpisode(episode: Episode): User {
         if (!this.episodes.contains(WatchesEp(episode)))
             this.episodes.add(WatchesEp(episode))
+        return this
+    }
+
+    fun rankTvShow(tvShow: TVShow, rank: Int): User {
+        val tvShowToBeRanked = this.tvShows.find { it.tvShow.identifier == tvShow.identifier }
+        if (tvShowToBeRanked == null) {
+            Logger.getLogger(this.name).info("Tried to rank a TvShow not watched")
+            return this
+        }
+        tvShowToBeRanked.rank = rank
         return this
     }
 

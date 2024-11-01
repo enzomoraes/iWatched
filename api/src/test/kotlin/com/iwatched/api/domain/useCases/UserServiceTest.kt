@@ -2,7 +2,6 @@ package com.iwatched.api.domain.useCases
 
 import com.iwatched.api.domain.dto.UserCreateDTO
 import com.iwatched.api.domain.dto.UserUpdateDTO
-import com.iwatched.api.domain.models.TVShow
 import com.iwatched.api.domain.models.User
 import com.iwatched.api.domain.repositories.UserRepository
 import com.iwatched.api.domain.repositories.projections.IUserProjection
@@ -117,7 +116,7 @@ class UserServiceTest {
         assertEquals(userId, savedUser.identifier)
         assertEquals(userUpdateDTO.name, savedUser.name)
         assertEquals(userUpdateDTO.username, savedUser.username)
-        // You can also check other fields to ensure they are unchanged
+
         assertEquals(existingUser.email, savedUser.email)
         assertEquals(existingUser.image, savedUser.image)
         assertEquals(existingUser.active, savedUser.active)
@@ -274,5 +273,51 @@ class UserServiceTest {
         assertTrue(user.seasons.size == seasons.size)
         assertTrue(user.tvShows.size == 1)
         verify(userRepository, times(seasons.size)).save(user)
+    }
+
+    @Test
+    fun `should rank tv show`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
+
+        val tvShow = TvShowFactory.createTVShow()
+
+        // When
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        doReturn(Optional.of(tvShow))
+            .`when`(tvShowService).findByIdentifier(tvShow.identifier)
+
+        userService.rankTvShow(userId, tvShow.identifier, 1)
+
+        // Then
+        assertEquals(1, user.tvShows.first().rank)
+        assertEquals(user.tvShows.size, 1)
+        verify(userRepository, times(1)).save(user)
+
+    }
+
+    @Test
+    fun `should update rank tv show`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
+
+        val tvShow = TvShowFactory.createTVShow()
+
+        // When
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        doReturn(Optional.of(tvShow))
+            .`when`(tvShowService).findByIdentifier(tvShow.identifier)
+
+        userService.rankTvShow(userId, tvShow.identifier, 1)
+
+        userService.rankTvShow(userId, tvShow.identifier, 2)
+
+        // Then
+        assertEquals(2, user.tvShows.first().rank)
+        assertEquals(user.tvShows.size, 1)
+        verify(userRepository, times(2)).save(user)
+
     }
 }

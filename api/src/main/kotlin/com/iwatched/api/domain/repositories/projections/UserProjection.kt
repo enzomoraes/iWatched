@@ -23,15 +23,26 @@ interface IUserDetails {
     val follows: Set<IFollowsProjection>
     val episodes: Set<IWatchesEpsProjection>
     val timeWatched: Long
+    val tvShows: Set<IWatchesTvShowsProjection>
 }
 
 interface IWatchesEpsProjection {
     val episode: IEpisodeProjection
 }
 
+interface IWatchesTvShowsProjection {
+    val tvShow: ITvShowProjection
+}
+
 interface IEpisodeProjection {
     val identifier: UUID
     val duration: Long
+}
+
+interface ITvShowProjection {
+    val identifier: UUID
+    val title: String
+    val rank: Int
 }
 
 interface IFollowsProjection {
@@ -49,7 +60,8 @@ data class UserDetails(
     override val active: Boolean,
     override val follows: Set<IFollowsProjection>,
     override val episodes: Set<IWatchesEpsProjection>,
-    override val timeWatched: Long
+    override val timeWatched: Long,
+    override val tvShows: Set<IWatchesTvShowsProjection>
 ) : IUserDetails
 
 data class UserProjection(
@@ -71,7 +83,15 @@ data class WatchesEpsProjection(
     override val episode: EpisodeProjection,
 ) : IWatchesEpsProjection
 
+data class WatchesTvShowProjection(override val tvShow: TvShowProjection) : IWatchesTvShowsProjection
+
 data class EpisodeProjection(
     override val identifier: UUID,
     override val duration: Long,
 ) : IEpisodeProjection
+
+data class TvShowProjection(
+    override val identifier: UUID,
+    override val title: String,
+    override val rank: Int
+) : ITvShowProjection
