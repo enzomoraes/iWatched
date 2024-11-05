@@ -19,7 +19,7 @@ class UserRepositoryImpl(
 
         val tvShowsQuery = """
             MATCH (u:User {identifier: '$identifier'})-[w:WATCHES_TV_SHOW]->(t:TVShow)
-            RETURN collect({tvShow: t, rank: w.rank}) as tvShows
+            RETURN collect({tvShow: t, rank: w.rank, currentlyWatching: w.currentlyWatching}) as tvShows
         """
 
         val tvShows = neo4jClient.query(tvShowsQuery).bind(identifier.toString()).to("identifier")
@@ -29,7 +29,8 @@ class UserRepositoryImpl(
                         TvShowProjection(
                             identifier = UUID.fromString(tvShowRecord["tvShow"]["identifier"].asString()),
                             title = tvShowRecord["tvShow"]["title"].asString(),
-                            rank = tvShowRecord["rank"].asInt()
+                            rank = tvShowRecord["rank"].asInt(),
+                            currentlyWatching = tvShowRecord["currentlyWatching"].asBoolean()
                         )
                     )
                 }.toSet()

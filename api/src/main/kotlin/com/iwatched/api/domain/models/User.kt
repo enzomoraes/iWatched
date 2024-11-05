@@ -62,4 +62,14 @@ data class User(
         return this
     }
 
+    fun markAsCurrentlyWatching(tvShow: TVShow): User {
+        val tvShowToBeRanked = this.tvShows.find { it.tvShow.identifier == tvShow.identifier }
+        if (tvShowToBeRanked == null) {
+            this.tvShows.add(WatchesTVShow(tvShow, null, 0, currentlyWatching = true))
+            return this
+        }
+        tvShowToBeRanked.currentlyWatching = true
+        return this
+    }
+
 }

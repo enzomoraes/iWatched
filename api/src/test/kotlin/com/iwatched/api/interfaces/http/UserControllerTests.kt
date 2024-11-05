@@ -241,4 +241,23 @@ class UserControllerTest @Autowired constructor(
         assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
         assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.first().rank)
     }
+
+    @Test
+    fun `currently watching tv show`() {
+        databaseSeeder.seedTVShow()
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+        assertEquals(0, userRepository.findById(DatabaseSeeder.USER1_ID).get().seasons.size)
+
+        val tvShow = tvShowRepository.findAll().first()
+
+        mockMvc.perform(
+            post("/users/currently-watching-tv-show")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(CurrentlyWatchingTvShowDTO(DatabaseSeeder.USER1_ID, tvShow.identifier)))
+        )
+            .andExpect(status().isNoContent)
+
+        assertEquals(1, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.size)
+        assertEquals(true, userRepository.findById(DatabaseSeeder.USER1_ID).get().tvShows.first().currentlyWatching)
+    }
 }

@@ -43,6 +43,7 @@ interface ITvShowProjection {
     val identifier: UUID
     val title: String
     val rank: Int
+    val currentlyWatching: Boolean
 }
 
 interface IFollowsProjection {
@@ -93,5 +94,6 @@ data class EpisodeProjection(
 data class TvShowProjection(
     override val identifier: UUID,
     override val title: String,
-    override val rank: Int
+    override val rank: Int,
+    override val currentlyWatching: Boolean
 ) : ITvShowProjection

@@ -11,9 +11,10 @@ data class WatchesTVShow(
     @Id
     @GeneratedValue
     val id: Long?,
-    var rank: Int?
+    var rank: Int?,
+    var currentlyWatching: Boolean = false
 ) {
-    constructor(tvShow: TVShow) : this(tvShow, null, 0)
+    constructor(tvShow: TVShow) : this(tvShow, null, 0, currentlyWatching = false)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is WatchesTVShow) return false

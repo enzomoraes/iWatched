@@ -320,4 +320,26 @@ class UserServiceTest {
         verify(userRepository, times(2)).save(user)
 
     }
+
+    @Test
+    fun `should mark tv show as currently watching`() {
+        // Given
+        val userId = UUID.randomUUID()
+        val user = UserFactory.createUser("user1", userId)
+
+        val tvShow = TvShowFactory.createTVShow()
+
+        // When
+        `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        doReturn(Optional.of(tvShow))
+            .`when`(tvShowService).findByIdentifier(tvShow.identifier)
+
+        userService.markTvShowAsCurrentlyWatching(userId, tvShow.identifier)
+
+        // Then
+        assertEquals(true, user.tvShows.first().currentlyWatching)
+        assertEquals(user.tvShows.size, 1)
+        verify(userRepository, times(1)).save(user)
+
+    }
 }
